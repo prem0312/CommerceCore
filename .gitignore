@@ -1,0 +1,46 @@
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# Environment and Secrets
+.env
+.env.local
+*.env
+
+# IDE Metadata
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+.vscode/
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.built-jar-path
+
+# Logs and Runtime Artifacts
+*.log
+logs/
+*.tmp
+*.bak
+.system_generated/
+
+# OS-Generated Files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Docker / Local Runtime Volumes
+.docker/
