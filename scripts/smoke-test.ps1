@@ -1,19 +1,123 @@
 # CommerceCore End-to-End Smoke Test Script (PowerShell)
-$GatewayUrl = "http://localhost:8080"
+$GatewayUrl = if ($env:COMMERCECORE_GATEWAY_URL) { $env:COMMERCECORE_GATEWAY_URL } else { "http://localhost:8080" }
+$EurekaUrl = if ($env:COMMERCECORE_EUREKA_URL) { $env:COMMERCECORE_EUREKA_URL } else { "http://localhost:8761" }
 $ErrorActionPreference = "Stop"
+
+# Auto-load .env from repository root if present
+$scriptDir = if ($PSScriptRoot) { $PSScriptRoot } else { Split-Path -Parent $MyInvocation.MyCommand.Definition }
+if (-not $scriptDir) { $scriptDir = "." }
+$envFile = Join-Path (Split-Path -Parent (Resolve-Path $scriptDir)) ".env"
+if (-not (Test-Path $envFile)) {
+    $envFile = ".env"
+}
+if (Test-Path $envFile) {
+    Get-Content $envFile | ForEach-Object {
+        $line = $_.Trim()
+        if ($line -and -not $line.StartsWith("#") -and $line -match '^([^=]+)=(.*)$') {
+            $key = $matches[1].Trim()
+            $val = $matches[2].Trim().Trim('"').Trim("'")
+            if (-not [System.Environment]::GetEnvironmentVariable($key)) {
+                [System.Environment]::SetEnvironmentVariable($key, $val)
+            }
+        }
+    }
+}
 
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host "  COMMERCECORE END-TO-END SMOKE TEST SUITE" -ForegroundColor Cyan
 Write-Host "==================================================" -ForegroundColor Cyan
 
-# 1. Health & Discovery Check
-Write-Host "`n[1/11] Checking Eureka and API Gateway Health..." -ForegroundColor Yellow
-$gatewayHealth = Invoke-RestMethod -Uri "$GatewayUrl/actuator/health" -Method Get
-Write-Host "API Gateway Status: $($gatewayHealth.status)" -ForegroundColor Green
+# 1. Health & Discovery Readiness Check
+Write-Host "`n[1/11] Checking Eureka and API Gateway Health & Service Discovery Readiness..." -ForegroundColor Yellow
+
+$requiredServices = @(
+    "AUTH-SERVICE",
+    "USER-SERVICE",
+    "INVENTORY-SERVICE",
+    "ORDER-SERVICE",
+    "PAYMENT-SERVICE",
+    "REVIEW-SERVICE",
+    "NOTIFICATION-SERVICE"
+)
+
+$timeoutSeconds = 60
+$pollInterval = 2
+$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$ready = $false
+$missingServices = @()
+
+while ($stopwatch.Elapsed.TotalSeconds -lt $timeoutSeconds) {
+    $gatewayIsUp = $false
+    try {
+        $gatewayHealth = Invoke-RestMethod -Uri "$GatewayUrl/actuator/health" -Method Get -TimeoutSec 3 -ErrorAction Stop
+        if ($gatewayHealth.status -eq "UP") {
+            $gatewayIsUp = $true
+        }
+    } catch {}
+
+    $registeredUpServices = @()
+    try {
+        $eurekaResp = Invoke-RestMethod -Uri "$EurekaUrl/eureka/apps" -Headers @{ Accept = "application/json" } -Method Get -TimeoutSec 3 -ErrorAction Stop
+        if ($eurekaResp -and $eurekaResp.applications -and $eurekaResp.applications.application) {
+            $apps = @($eurekaResp.applications.application)
+            foreach ($app in $apps) {
+                $appName = if ($app.name) { $app.name.ToString().ToUpper() } else { "" }
+                $instances = @($app.instance)
+                $isUp = $false
+                foreach ($inst in $instances) {
+                    if ($inst.status -eq "UP") {
+                        $isUp = $true
+                        break
+                    }
+                }
+                if ($isUp -and $appName) {
+                    $registeredUpServices += $appName
+                }
+            }
+        }
+    } catch {}
+
+    $missingServices = @()
+    if (-not $gatewayIsUp) {
+        $missingServices += "API-GATEWAY"
+    }
+    foreach ($svc in $requiredServices) {
+        if ($registeredUpServices -notcontains $svc) {
+            $missingServices += $svc
+        }
+    }
+
+    if ($missingServices.Count -eq 0) {
+        $ready = $true
+        break
+    }
+
+    $elapsed = [math]::Round($stopwatch.Elapsed.TotalSeconds, 0)
+    Write-Host "  Waiting for services to be UP in Eureka... Missing: ($($missingServices -join ', ')) [${elapsed}s/${timeoutSeconds}s]" -ForegroundColor Gray
+    Start-Sleep -Seconds $pollInterval
+}
+
+if (-not $ready) {
+    Write-Host "`n[ERROR] Service readiness timeout reached (${timeoutSeconds}s)." -ForegroundColor Red
+    Write-Host "The following required services are missing or not UP in Eureka:" -ForegroundColor Red
+    foreach ($missing in $missingServices) {
+        Write-Host "  - $missing" -ForegroundColor Red
+    }
+    exit 1
+}
+$elapsedTotal = [math]::Round($stopwatch.Elapsed.TotalSeconds, 1)
+Write-Host "API Gateway Status: UP" -ForegroundColor Green
+Write-Host "All 7 required microservices registered and UP in Eureka (${elapsedTotal}s elapsed)." -ForegroundColor Green
 
 # 2. User Registration (Public registration always creates USER role)
 $testEmail = "shopper_$(Get-Random)@commercecore.io"
-$password = "SecretPass123!"
+if (-not $env:COMMERCECORE_SMOKE_TEST_PASSWORD) {
+    Write-Host "ERROR: COMMERCECORE_SMOKE_TEST_PASSWORD is not set." -ForegroundColor Red
+    exit 1
+}
+
+$password = $env:COMMERCECORE_SMOKE_TEST_PASSWORD
+
 Write-Host "`n[2/11] Registering test customer: $testEmail..." -ForegroundColor Yellow
 $regBody = @{
     email = $testEmail
@@ -21,7 +125,42 @@ $regBody = @{
     name = "Test Shopper"
 } | ConvertTo-Json
 
-$regResp = Invoke-RestMethod -Uri "$GatewayUrl/api/v1/auth/register" -Method Post -Body $regBody -ContentType "application/json"
+$regTimeout = 30
+$regPollInterval = 2
+$regStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$regResp = $null
+
+while ($regStopwatch.Elapsed.TotalSeconds -lt $regTimeout) {
+    try {
+        $regResp = Invoke-RestMethod -Uri "$GatewayUrl/api/v1/auth/register" -Method Post -Body $regBody -ContentType "application/json" -ErrorAction Stop
+        break
+    } catch {
+        $statusCode = 0
+        $errBody = ""
+        if ($_.Exception.Response) {
+            $statusCode = [int]$_.Exception.Response.StatusCode
+            try {
+                $reader = [System.IO.StreamReader]::new($_.Exception.Response.GetResponseStream())
+                $errBody = $reader.ReadToEnd()
+            } catch {}
+}
+        # Retry only when response is 503/SERVICE_UNAVAILABLE caused by missing discovery
+        $is503 = ($statusCode -eq 503) -or ($_.Exception.Message -match "503") -or ($errBody -match "503|SERVICE_UNAVAILABLE|Unable to find instance")
+        if ($is503) {
+            $elapsed = [math]::Round($regStopwatch.Elapsed.TotalSeconds, 0)
+            Write-Host "  Gateway cache synchronizing (503 Service Unavailable)... Retrying in ${regPollInterval}s [${elapsed}s/${regTimeout}s]" -ForegroundColor Gray
+            Start-Sleep -Seconds $regPollInterval
+        } else {
+            # Do not retry validation errors (4xx) or other non-503 errors
+            throw $_
+        }
+    }
+}
+
+if (-not $regResp) {
+    throw "Registration failed: Timed out waiting for API Gateway to route to auth-service after ${regTimeout}s."
+}
+
 $token = $regResp.accessToken
 $userId = $regResp.userId
 Write-Host "Registered User ID: $userId (Role: $($regResp.role))" -ForegroundColor Green
@@ -48,7 +187,12 @@ Write-Host "Profile retrieved: $($profile.name) <$($profile.email)> (Role: $($pr
 # 5. Product Creation (Requires Admin Authentication)
 Write-Host "`n[5/11] Authenticating as Administrator & Creating Product..." -ForegroundColor Yellow
 $adminEmail = if ($env:COMMERCECORE_ADMIN_EMAIL) { $env:COMMERCECORE_ADMIN_EMAIL } else { "admin@commercecore.io" }
-$adminPassword = if ($env:COMMERCECORE_ADMIN_PASSWORD) { $env:COMMERCECORE_ADMIN_PASSWORD } else { "AdminPass123!" }
+if (-not $env:COMMERCECORE_ADMIN_PASSWORD) {
+    Write-Host "ERROR: COMMERCECORE_ADMIN_PASSWORD is not set." -ForegroundColor Red
+    exit 1
+}
+
+$adminPassword = $env:COMMERCECORE_ADMIN_PASSWORD
 
 $adminLoginBody = @{
     email = $adminEmail

@@ -50,6 +50,7 @@ outbox:
   publisher:
     enabled: true
     poll-interval-ms: 2000
+    claim-lease-seconds: 30
 
 management:
   endpoints:

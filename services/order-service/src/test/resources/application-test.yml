@@ -34,3 +34,4 @@ eureka:
 outbox:
   publisher:
     enabled: false
+    claim-lease-seconds: 30
