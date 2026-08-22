@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-GATEWAY_URL="${COMMERCECORE_GATEWAY_URL:-${GATEWAY_URL:-http://localhost:8080}}"
-EUREKA_URL="${COMMERCECORE_EUREKA_URL:-${EUREKA_URL:-http://localhost:8761}}"
-
 # Auto-load .env from repository root if present
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." 2>/dev/null && pwd)"
@@ -28,6 +25,9 @@ elif [ -f ".env" ]; then
     fi
   done < ".env"
 fi
+
+GATEWAY_URL="${COMMERCECORE_GATEWAY_URL:-${GATEWAY_URL:-http://localhost:8080}}"
+EUREKA_URL="${COMMERCECORE_EUREKA_URL:-${EUREKA_URL:-http://localhost:8761}}"
 
 echo "=================================================="
 echo "  COMMERCECORE END-TO-END SMOKE TEST SUITE"

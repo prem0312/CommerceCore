@@ -30,6 +30,12 @@ class AuthControllerIntegrationTests {
     @Autowired
     private UserRepository userRepository;
 
+    @org.springframework.beans.factory.annotation.Value("${COMMERCECORE_ADMIN_EMAIL:${app.bootstrap.admin.email:admin@commercecore.io}}")
+    private String adminEmail;
+
+    @org.springframework.beans.factory.annotation.Value("${COMMERCECORE_ADMIN_PASSWORD:${app.bootstrap.admin.password:AdminPass123!}}")
+    private String adminPassword;
+
     @Test
     @DisplayName("Should successfully register a new user without role and assign USER role")
     void testRegisterUser_Success() throws Exception {
@@ -99,15 +105,14 @@ class AuthControllerIntegrationTests {
     @Test
     @DisplayName("Should allow bootstrapped ADMIN account to authenticate successfully")
     void testAdminAuthentication_Success() throws Exception {
-        // DataInitializer boots admin@commercecore.io / AdminPass123!
-        LoginRequest adminLogin = new LoginRequest("admin@commercecore.io", "AdminPass123!");
+        LoginRequest adminLogin = new LoginRequest(adminEmail, adminPassword);
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(adminLogin)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
-                .andExpect(jsonPath("$.email").value("admin@commercecore.io"))
+                .andExpect(jsonPath("$.email").value(adminEmail))
                 .andExpect(jsonPath("$.role").value("ADMIN"));
     }
 }

@@ -1,6 +1,4 @@
 # CommerceCore End-to-End Smoke Test Script (PowerShell)
-$GatewayUrl = if ($env:COMMERCECORE_GATEWAY_URL) { $env:COMMERCECORE_GATEWAY_URL } else { "http://localhost:8080" }
-$EurekaUrl = if ($env:COMMERCECORE_EUREKA_URL) { $env:COMMERCECORE_EUREKA_URL } else { "http://localhost:8761" }
 $ErrorActionPreference = "Stop"
 
 # Auto-load .env from repository root if present
@@ -22,6 +20,9 @@ if (Test-Path $envFile) {
         }
     }
 }
+
+$GatewayUrl = if ($env:COMMERCECORE_GATEWAY_URL) { $env:COMMERCECORE_GATEWAY_URL } else { "http://localhost:8080" }
+$EurekaUrl = if ($env:COMMERCECORE_EUREKA_URL) { $env:COMMERCECORE_EUREKA_URL } else { "http://localhost:8761" }
 
 Write-Host "==================================================" -ForegroundColor Cyan
 Write-Host "  COMMERCECORE END-TO-END SMOKE TEST SUITE" -ForegroundColor Cyan
