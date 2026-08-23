@@ -41,3 +41,8 @@ logs/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+# Frontend Dependencies and Build Artifacts
+frontend/node_modules/
+frontend/dist/
+frontend/.env
