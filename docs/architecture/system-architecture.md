@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-CommerceCore is an e-commerce microservices platform built using **Java 21/25**, **Spring Boot 3.4**, **Spring Cloud**, **Apache Kafka (KRaft mode)**, **Redis 7.2**, and **PostgreSQL 16**.
+CommerceCore is an e-commerce microservices platform built using **Java 25**, **Spring Boot 3.4**, **Spring Cloud**, **Apache Kafka (KRaft mode)**, **Redis 7.2**, and **PostgreSQL 16**.
 
 ```
                            +------------------------+

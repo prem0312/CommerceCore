@@ -1,6 +1,6 @@
 # CommerceCore
 
-CommerceCore is an e-commerce microservices and order processing backend built with **Java 21/25**, **Spring Boot 3.4**, **Spring Cloud**, **PostgreSQL 16**, **Redis 7.2**, **Apache Kafka (KRaft mode)**, and **Docker Compose**.
+CommerceCore is an e-commerce microservices and order processing backend built with **Java 21/25**, **Spring Boot 3.4**, **Spring Cloud**, **PostgreSQL 16**, **Redis 7.2**, and **Apache Kafka (KRaft mode)**.
 
 It demonstrates core distributed systems patterns including database-per-service, distributed idempotency, transactional outbox for event publishing, optimistic concurrency control, cache-aside caching, and consumer-side event deduplication.
 
@@ -39,7 +39,7 @@ It demonstrates core distributed systems patterns including database-per-service
                                                                | (Outbox)
                                                                v
                                                      +--------------------+
-                                                     | Kafka (KRaft Mode) | (:9092)
+                                                     | Kafka (KRaft Mode) | (:29092)
                                                      +---------+----------+
                                                                |
                                                                v
@@ -83,7 +83,7 @@ It demonstrates core distributed systems patterns including database-per-service
 
 | Service | Port | Description |
 | :--- | :--- | :--- |
-| **`eureka-service`** | `8761` | Netflix Eureka Service Discovery |
+| **`eureka-service`** | `8700` | Netflix Eureka Service Discovery |
 | **`api-gateway`** | `8080` | Spring Cloud Gateway (Routing & JWT Security) |
 | **`auth-service`** | `8081` | User registration, authentication, and JWT token issuance |
 | **`user-service`** | `8082` | User profiles and address management |
@@ -99,15 +99,17 @@ It demonstrates core distributed systems patterns including database-per-service
 
 ### Prerequisites
 
-* **Java 21** or **Java 25**
+* **Java 21 LTS or 25 LTS**
 * **Maven 3.9+**
-* **Docker & Docker Compose**
+* **PostgreSQL 16**
+* **Redis / Memurai**
+* **Apache Kafka 3.6+ (KRaft mode)**
 
 ### 1. Environment Configuration
 
 Copy the example environment file and configure your local credentials:
-```bash
-cp .env.example .env
+```powershell
+Copy-Item .env.example .env
 ```
 
 **Required Environment Variables:**
@@ -118,43 +120,45 @@ cp .env.example .env
 ### 2. Build the Project and Run Tests
 
 Run the full test suite across all modules:
-```bash
+```powershell
 mvn clean verify
 ```
 
-### 3. Run the Platform with Docker Compose
+### 3. Start Native Windows Infrastructure
 
-Start all microservices and infrastructure components:
-```bash
-docker compose up -d --build
+Set up databases and start native infrastructure (PostgreSQL, Redis, Kafka KRaft):
+```powershell
+.\scripts\setup-native-infra.ps1
+.\scripts\start-infra.ps1
 ```
 
-Check container status:
-```bash
-docker compose ps
+### 4. Start Local Spring Boot Microservices
+
+Start all 9 services natively in dependency order:
+```powershell
+.\scripts\start-local.ps1
 ```
 
-### 4. Run the End-to-End Smoke Tests
+### 5. Run the End-to-End Smoke Tests
 
-**PowerShell (Windows):**
+Execute the 11-step end-to-end smoke test suite:
 ```powershell
 .\scripts\smoke-test.ps1
 ```
 
-**Bash (Linux / macOS):**
-```bash
-chmod +x ./scripts/smoke-test.sh
-./scripts/smoke-test.sh
+### 6. Stop Local Services & Infrastructure
+
+```powershell
+.\scripts\stop-local.ps1
+.\scripts\stop-infra.ps1
 ```
 
 ---
 
 ## Monitoring and Tooling
 
-* **Eureka Dashboard**: [http://localhost:8761](http://localhost:8761)
+* **Eureka Dashboard**: [http://localhost:8700](http://localhost:8700)
 * **API Gateway Actuator Health**: [http://localhost:8080/actuator/health](http://localhost:8080/actuator/health)
-* **Prometheus**: [http://localhost:9090](http://localhost:9090)
-* **Grafana**: [http://localhost:3000](http://localhost:3000) (Default login: `admin` / `admin`)
 * **Swagger / OpenAPI Documentation**:
   - Inventory Service: [http://localhost:8083/swagger-ui.html](http://localhost:8083/swagger-ui.html)
   - Order Service: [http://localhost:8084/swagger-ui.html](http://localhost:8084/swagger-ui.html)

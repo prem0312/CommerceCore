@@ -41,6 +41,3 @@ logs/
 .DS_Store
 Thumbs.db
 Desktop.ini
-
-# Docker / Local Runtime Volumes
-.docker/

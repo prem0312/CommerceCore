@@ -4,7 +4,7 @@
 Accepted
 
 ## Context
-Microservices run across dynamic container IP addresses in Docker Compose and Kubernetes environments. Hardcoding upstream URLs impedes dynamic scaling and health-aware routing.
+Microservices run across dynamic ports and network locations in distributed environments. Hardcoding upstream URLs impedes dynamic scaling and health-aware routing.
 
 ## Decision
 Adopt Netflix Eureka Server as the central service registry. Spring Cloud Gateway and downstream services discover endpoints dynamically via service IDs (`lb://inventory-service`, etc.).

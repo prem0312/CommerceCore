@@ -33,16 +33,28 @@ if (Test-Path $envFile) {
 
 # 2. Check Backing Infrastructure (PostgreSQL, Redis, Kafka)
 Write-Host "`n[1/4] Checking backing infrastructure..." -ForegroundColor Yellow
-$kafkaPort = if ($env:KAFKA_PORT) { [int]$env:KAFKA_PORT } else { 9092 }
+$kafkaPort = if ($env:KAFKA_PORT) { [int]$env:KAFKA_PORT } else { 29092 }
 $pgReady = (Test-NetConnection -ComputerName 127.0.0.1 -Port 5432 -WarningAction SilentlyContinue).TcpTestSucceeded
 $redisReady = (Test-NetConnection -ComputerName 127.0.0.1 -Port 6379 -WarningAction SilentlyContinue).TcpTestSucceeded
 $kafkaReady = (Test-NetConnection -ComputerName 127.0.0.1 -Port $kafkaPort -WarningAction SilentlyContinue).TcpTestSucceeded
 
-if (-not ($pgReady -and $redisReady -and $kafkaReady)) {
-    Write-Host "Starting infrastructure containers (PostgreSQL, Redis, Kafka)..." -ForegroundColor Yellow
-    docker compose -f "$rootDir\docker-compose.yml" up -d postgres redis kafka
-    Start-Sleep -Seconds 5
+$missingInfra = @()
+if (-not $pgReady) { $missingInfra += "PostgreSQL (Port 5432)" }
+if (-not $redisReady) { $missingInfra += "Redis (Port 6379)" }
+if (-not $kafkaReady) { $missingInfra += "Kafka (Port $kafkaPort)" }
+
+if ($missingInfra.Count -gt 0) {
+    Write-Host "[ERROR] The following native infrastructure dependencies are unavailable:" -ForegroundColor Red
+    foreach ($m in $missingInfra) {
+        Write-Host "  - $m" -ForegroundColor Red
+    }
+    Write-Host "`nPlease start native infrastructure before launching services:" -ForegroundColor Yellow
+    Write-Host "  .\scripts\start-infra.ps1`n" -ForegroundColor White
+    exit 1
 }
+Write-Host "  PostgreSQL (:5432) -> READY" -ForegroundColor Green
+Write-Host "  Redis (:6379)      -> READY" -ForegroundColor Green
+Write-Host "  Kafka (:$kafkaPort)    -> READY" -ForegroundColor Green
 
 # 3. Create Logs Directory
 $logsDir = Join-Path $rootDir "logs"
@@ -164,7 +176,7 @@ foreach ($svc in $services) {
 # 6. Verify Service Readiness
 Write-Host "`n[4/4] Verifying service readiness & Eureka registration..." -ForegroundColor Yellow
 $stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
-$timeoutSec = 60
+$timeoutSec = 120
 $allUp = $false
 
 while ($stopwatch.Elapsed.TotalSeconds -lt $timeoutSec) {
