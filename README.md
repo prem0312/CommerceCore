@@ -1,86 +1,193 @@
-# EliteCart
+# CommerceCore
 
-A complete, portfolio-ready, full-stack e-commerce platform — Spring Boot 3
-backend, React 19 storefront + admin console, Docker, CI/CD, and full API
-docs.
+### Full-Stack E-Commerce Platform | Spring Boot 3 + React 19
 
-Built across 6 phases as a real working system at every step (no
-placeholders, no partial modules) — see each phase's own README for the
-detailed breakdown.
+CommerceCore is a full-stack e-commerce application featuring a Spring Boot backend, React storefront, administrative dashboard, and containerized development environment.
 
----
+The project is adapted from the open-source [EliteCart](https://github.com/sumiran3031/Elitecart) application and is being developed further as a portfolio project focused on backend engineering, full-stack development, application security, and deployment practices.
 
 ## Features
 
-- **Auth**: JWT access/refresh tokens, email verification, forgot/reset/change
-  password, remember-me, role-based access (ADMIN / CUSTOMER)
-- **Catalog**: nested categories, product search/filter/sort/pagination,
-  multiple images, discount pricing, featured/latest/best-seller listings
-- **Shopping**: cart, wishlist (with move-to-cart), saved addresses
-- **Orders**: full checkout flow, mock payment gateway (card/UPI/net
-  banking/COD/wallet), order status lifecycle with automatic emails,
-  customer cancellation, admin refunds
-- **Reviews**: one per customer per product, live rating aggregation
-- **Admin console**: Recharts dashboard (revenue trend, category breakdown,
-  top products), product/category/order/customer management, CSV export
-- **Ops**: Dockerized, GitHub Actions CI (build + test both apps), deployment
-  guides for Railway and Render
+### Authentication and Security
+- JWT access and refresh token authentication
+- Role-based authorization for administrators and customers
+- Email verification and password recovery
+- Remember-me functionality
+- Password management
+- Environment-variable-based configuration for sensitive credentials
 
-## Tech stack
+### Product Catalog
+- Hierarchical product categories
+- Product search, filtering, sorting, and pagination
+- Multiple product images
+- Discount pricing
+- Featured, latest, and best-selling product listings
 
-**Backend** - Java 21, Spring Boot 3.3, Spring Security 6, JWT (jjwt),
-Spring Data JPA / Hibernate, MySQL 8, Lombok, MapStruct, springdoc-openapi,
-Jakarta Validation, Spring Mail, JUnit 5 + Mockito, Docker
+### Shopping Experience
+- Shopping cart management
+- Wishlist functionality
+- Saved delivery addresses
+- Checkout workflow
+- Order history and order tracking
 
-**Frontend** - React 19, Vite 6, React Router 6, Redux Toolkit, Axios, React
-Hook Form, Framer Motion, Recharts, React Icons, Tailwind CSS
+### Orders and Payments
+- Mock payment processing supporting card, UPI, net banking, cash on delivery, and wallet flows
+- Order status management
+- Customer order cancellation
+- Administrative refund workflows
+- Transactional email notifications
 
-**DevOps** - Docker Compose, GitHub Actions, Railway / Render
+**Note:** Payment processing is simulated. The application does not currently provide live payment gateway integration.
 
-## Folder structure
+### Admin Dashboard
+- Revenue and sales visualizations
+- Category-level analytics
+- Product management
+- Category management
+- Order management
+- Customer management
+- CSV export
 
-```
-elitecart/
-├── elitecart-backend/       # Spring Boot API (see its own README for full detail)
-├── elitecart-frontend/      # React storefront + admin console (see its own README)
+### Development and Operations
+- Docker-based application setup
+- GitHub Actions CI workflow
+- API documentation with OpenAPI
+- Postman API collection
+- Architecture and database documentation
+- Deployment guides for Railway and Render
+
+## Technology Stack
+
+| Layer | Technologies |
+|---|---|
+| Backend | Java 21, Spring Boot 3.3, Spring Security 6 |
+| Authentication | JWT, Spring Security |
+| Persistence | Spring Data JPA, Hibernate, MySQL 8 |
+| Backend Utilities | Lombok, MapStruct, Jakarta Validation, Spring Mail |
+| API Documentation | Springdoc OpenAPI, Postman |
+| Frontend | React 19, Vite 6, JavaScript |
+| Routing and State | React Router 6, Redux Toolkit |
+| UI | Tailwind CSS, Framer Motion, React Icons |
+| Forms and Networking | React Hook Form, Axios |
+| Analytics | Recharts |
+| Testing | JUnit 5, Mockito |
+| DevOps | Docker, Docker Compose, GitHub Actions |
+
+## Project Structure
+
+```text
+CommerceCore/
+├── elitecart-backend/        # Spring Boot REST API
+├── elitecart-frontend/       # React storefront and admin console
 ├── docs/
-│   ├── ER-DIAGRAM.md         # Full entity-relationship diagram (Mermaid)
-│   ├── ARCHITECTURE.md       # System architecture + request-flow sequence diagrams
-│   └── DEPLOYMENT.md         # Step-by-step Railway & Render deployment guides
+│   ├── ARCHITECTURE.md       # Architecture and request flows
+│   ├── ER-DIAGRAM.md         # Database relationships
+│   └── DEPLOYMENT.md         # Deployment instructions
 ├── postman/
-│   └── EliteCart.postman_collection.json   # Every endpoint, ready to import
-├── .github/workflows/ci-cd.yml              # Build + test both apps on every push
-├── docker-compose.yml                        # MySQL + backend + frontend, one command
+│   └── EliteCart.postman_collection.json
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml        # Continuous integration
+├── docker-compose.yml
 ├── LICENSE
-└── README.md                                 # You are here
+└── README.md
 ```
 
+The original application directory names are retained to minimize unnecessary changes to the project configuration.
 
-## Diagrams
+## Architecture
 
-- [`docs/ER-DIAGRAM.md`](docs/ER-DIAGRAM.md) - full database schema (15 tables) with relationship notes
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) - system architecture, plus sequence diagrams for the auth and checkout flows
+CommerceCore uses a layered application architecture.
 
-## Author
+**Backend:** REST controllers, service classes, repositories, JPA entities, DTOs, and Spring Security.
 
-Built as a portfolio project demonstrating a production-shaped full-stack
-build: clean layered architecture, real transaction boundaries, JWT security
-done properly, and a frontend that isn't just static mockups — every screen
-is wired to a real, working API.
+**Frontend:** React components, feature-based state management, API clients, customer-facing pages, and administrative views.
+
+**Database:** MySQL with Hibernate/JPA for persistence.
+
+**Deployment:** Docker configurations for the backend, frontend, and database.
+
+For additional details, see:
+
+- [System Architecture](docs/ARCHITECTURE.md)
+- [Entity-Relationship Diagram](docs/ER-DIAGRAM.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+## Getting Started
+
+### Prerequisites
+
+- Java 21
+- Node.js and npm
+- MySQL 8, or Docker with Docker Compose
+- Git
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/prem0312/CommerceCore.git
+cd CommerceCore
+```
+
+### 2. Configure Environment Variables
+
+Refer to the example environment files:
+
+- `elitecart-backend/.env.example`
+- `elitecart-frontend/.env.example`
+
+The backend requires configuration for database credentials, JWT signing, and the administrator account. Mail configuration may also be required for email-related features.
+
+Never commit real passwords, API keys, or JWT secrets.
+
+### 3. Run the Application
+
+Consult the backend and frontend setup guides for the commands and environment configuration required by each application:
+
+- [Backend Setup](elitecart-backend/README.md)
+- [Frontend Setup](elitecart-frontend/README.md)
+
+A `docker-compose.yml` configuration is also included for container-based development.
+
+**Verification status:** The source migration has been completed, but the updated repository has not yet been independently validated through a full local build, automated test run, and end-to-end application check.
+
+## Testing and CI/CD
+
+The repository includes backend unit tests, frontend build tooling, and a GitHub Actions workflow.
+
+The CI configuration is located at:
+
+`.github/workflows/ci-cd.yml`
+
+Passing CI checks and successful local builds should be verified before describing the application as production-ready.
+
+## Future Enhancements
+
+- Integrate a real payment provider such as Stripe or Razorpay
+- Add coupon and promotional discount management
+- Support product variants such as size and color
+- Introduce advanced search for larger product catalogs
+- Add real-time order status notifications
+- Expand automated integration and end-to-end tests
+- Improve deployment security and observability
+- Add internationalization and multi-currency support
+
+## Project Background and Attribution
+
+CommerceCore is adapted from [EliteCart by sumiran3031](https://github.com/sumiran3031/Elitecart).
+
+The original implementation provides the foundation for the e-commerce functionality, including the backend, storefront, administrative interface, and associated documentation.
+
+This repository retains the original MIT license and attribution. Changes made during the repository adaptation include replacing the previous CommerceCore application structure, updating sensitive configuration to use environment variables, and adding source attribution.
+
+Further enhancements and independently implemented features will be documented as development continues.
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+Licensed under the [MIT License](LICENSE).
 
-## Future enhancements
+Original project: [sumiran3031/Elitecart](https://github.com/sumiran3031/Elitecart).
 
-- Real payment gateway integration (Stripe/Razorpay) behind the existing `PaymentService` interface
-- Coupon/discount codes at cart level
-- Product variants (size/color) instead of flat SKUs
-- Elasticsearch-backed product search for large catalogs
-- WebSocket-based real-time order status updates
-- Multi-currency / i18n support
-- Automated E2E tests (Playwright/Cypress) in CI
+---
 
-## Open-Source Attribution
-This project is adapted from [EliteCart](https://github.com/sumiran3031/Elitecart) by sumiran3031. The original project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+**CommerceCore** — An open-source full-stack e-commerce application adapted for continued development, learning, and portfolio demonstration.
