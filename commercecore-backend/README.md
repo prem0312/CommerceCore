@@ -1,4 +1,4 @@
-# EliteCart — Backend (Phase 1–4: Foundation → Auth → Catalog → Orders → Analytics)
+# CommerceCore — Backend (Phase 1–4: Foundation → Auth → Catalog → Orders → Analytics)
 
 Professional e-commerce platform backend built with **Java 21 + Spring Boot 3**.
 

@@ -1,4 +1,4 @@
-# EliteCart — Frontend (Phases 5–6: Storefront + Admin Console)
+# CommerCecore — Frontend (Phases 5–6: Storefront + Admin Console)
 
 The full frontend, built with **React 19 + Vite + Tailwind CSS** — the
 customer storefront (Phase 5) plus the admin console (Phase 6).

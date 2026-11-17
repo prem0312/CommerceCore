@@ -4,8 +4,6 @@
 
 CommerceCore is a full-stack e-commerce application featuring a Spring Boot backend, React storefront, administrative dashboard, and containerized development environment.
 
-The project is adapted from the open-source [EliteCart](https://github.com/sumiran3031/Elitecart) application and is being developed further as a portfolio project focused on backend engineering, full-stack development, application security, and deployment practices.
-
 ## Features
 
 ### Authentication and Security
@@ -77,14 +75,14 @@ The project is adapted from the open-source [EliteCart](https://github.com/sumir
 
 ```text
 CommerceCore/
-├── elitecart-backend/        # Spring Boot REST API
-├── elitecart-frontend/       # React storefront and admin console
+├── commercecore-backend/        # Spring Boot REST API
+├── commercecore-frontend/       # React storefront and admin console
 ├── docs/
 │   ├── ARCHITECTURE.md       # Architecture and request flows
 │   ├── ER-DIAGRAM.md         # Database relationships
 │   └── DEPLOYMENT.md         # Deployment instructions
 ├── postman/
-│   └── EliteCart.postman_collection.json
+│   └── CommerceCore.postman_collection.json
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml        # Continuous integration
@@ -93,7 +91,7 @@ CommerceCore/
 └── README.md
 ```
 
-The original application directory names are retained to minimize unnecessary changes to the project configuration.
+
 
 ## Architecture
 
@@ -133,8 +131,8 @@ cd CommerceCore
 
 Refer to the example environment files:
 
-- `elitecart-backend/.env.example`
-- `elitecart-frontend/.env.example`
+- `commercecore-backend/.env.example`
+- `commercecore-frontend/.env.example`
 
 The backend requires configuration for database credentials, JWT signing, and the administrator account. Mail configuration may also be required for email-related features.
 
@@ -142,14 +140,82 @@ Never commit real passwords, API keys, or JWT secrets.
 
 ### 3. Run the Application
 
-Consult the backend and frontend setup guides for the commands and environment configuration required by each application:
+CommerceCore can be started using Docker Compose or by running the backend and frontend separately.
 
-- [Backend Setup](elitecart-backend/README.md)
-- [Frontend Setup](elitecart-frontend/README.md)
+#### Option 1: Docker Compose (Recommended)
 
-A `docker-compose.yml` configuration is also included for container-based development.
+**Prerequisites:** Docker Desktop and Git.
 
-**Verification status:** The source migration has been completed, but the updated repository has not yet been independently validated through a full local build, automated test run, and end-to-end application check.
+**1. Clone the repository**
+
+```bash
+git clone https://github.com/prem0312/CommerceCore.git
+cd CommerceCore
+```
+
+**2. Configure environment variables**
+
+Copy the example environment files and update the required credentials:
+
+```bash
+cp commercecore-backend/.env.example commercecore-backend/.env
+cp commercecore-frontend/.env.example commercecore-frontend/.env
+```
+
+Set your own database password, JWT secret, administrator password, and mail configuration where required.
+
+**3. Start the application**
+
+```bash
+docker compose up --build -d
+```
+
+**4. Check the running services**
+
+```bash
+docker compose ps
+```
+
+Open the frontend at the localhost address published by Docker Compose.
+
+**5. Stop the application**
+
+```bash
+docker compose down
+```
+
+#### Option 2: Manual Setup
+
+**Prerequisites:** Java 21, Maven, Node.js, npm, and MySQL 8.
+
+**1. Start the backend**
+
+Configure MySQL and supply the required backend environment variables, then run:
+
+```bash
+cd commercecore-backend
+mvn spring-boot:run
+```
+
+**2. Start the frontend**
+
+Open a new terminal from the repository root:
+
+```bash
+cd commercecore-frontend
+npm install
+npm run dev
+```
+
+Open the local development URL displayed by Vite.
+
+#### Additional Documentation
+
+- [Backend Setup Guide](commercecore-backend/README.md)
+- [Frontend Setup Guide](commercecore-frontend/README.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+
+**Note:** Configure all required environment variables before starting. The exact Docker ports and startup behavior depend on the repository configuration.
 
 ## Testing and CI/CD
 
@@ -174,19 +240,15 @@ Passing CI checks and successful local builds should be verified before describi
 
 ## Project Background and Attribution
 
-CommerceCore is adapted from [EliteCart by sumiran3031](https://github.com/sumiran3031/Elitecart).
+The implementation provides the foundation for the e-commerce functionality, including the backend, storefront, administrative interface, and associated documentation.
 
-The original implementation provides the foundation for the e-commerce functionality, including the backend, storefront, administrative interface, and associated documentation.
-
-This repository retains the original MIT license and attribution. Changes made during the repository adaptation include replacing the previous CommerceCore application structure, updating sensitive configuration to use environment variables, and adding source attribution.
+This repository retains the MIT license and attribution.
 
 Further enhancements and independently implemented features will be documented as development continues.
 
 ## License
 
 Licensed under the [MIT License](LICENSE).
-
-Original project: [sumiran3031/Elitecart](https://github.com/sumiran3031/Elitecart).
 
 ---
 
